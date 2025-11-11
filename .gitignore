@@ -1,0 +1,11 @@
+/.vscode/
+bin/
+*.class
+*.log
+*.iml
+*.ipr
+*.iws
+.DS_STORE
+Thumbs.db
+*.zip
+projet-part1.jar
