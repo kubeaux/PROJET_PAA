@@ -76,4 +76,54 @@ public class Network {
         return load;
     }
 
+    public double calculerDisp() {
+        Map<String, Integer> load = load();
+        int nbGen = gen.size();
+        if (nbGen == 0) {
+            return 0.0;
+        }
+
+        double sommeU = 0.0;
+        for (Map.Entry<String, Integer> entry : load.entrySet()) {
+            String nomG = entry.getKey();
+            int Lg = entry.getValue();
+            int Cg = gen.get(nomG).getKw();
+            double ug = (double) Lg / (double) Cg;
+            sommeU += ug;
+        }
+        double u = sommeU / nbGen;
+
+        double disp = 0.0;
+        for (Map.Entry<String, Integer> entry : load.entrySet()) {
+            String nomG = entry.getKey();
+            int Lg = entry.getValue();
+            int Cg = gen.get(nomG).getKw();
+            double ug = (double) Lg / (double) Cg;
+            disp += Math.abs(ug - u);
+        }
+        return disp;
+    }
+
+    public double calculerSurcharge() {
+        Map<String, Integer> load = load();
+        double surcharge = 0.0;
+
+        for (Map.Entry<String, Integer> entry : load.entrySet()) {
+            String nomG = entry.getKey();
+            int Lg = entry.getValue();
+            int Cg = gen.get(nomG).getKw();
+            double terme = (double) (Lg - Cg) / (double) Cg;
+            if (terme > 0) {
+                surcharge += terme;
+            }
+        }
+        return surcharge;
+    }
+
+    public double cout(int lambda) {
+        double disp = calculerDisp();
+        double surcharge = calculerSurcharge();
+        return disp + lambda * surcharge;
+    }
+
 }
