@@ -126,7 +126,15 @@ public class Main {
 
             switch (choix) {
                 case "1":
-                    System.out.println("(À implémenter le calcul du coût du réseau ici)");
+                    int lambda = 10;
+                    double disp = network.calculerDisp();
+                    double surcharge = network.calculerSurcharge();
+                    double cout = network.cout(lambda);
+
+                    System.out.printf(java.util.Locale.ROOT, 
+                                    "Disp(S)=%.4f, Surcharge(S)=%.4f, Cout(S)=%.4f (lambda=%d)%n",
+                                    disp, surcharge, cout, lambda
+                    );
                     break;
 
                 case "2":
