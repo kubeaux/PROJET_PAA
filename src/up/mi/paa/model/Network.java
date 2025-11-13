@@ -56,18 +56,24 @@ public class Network {
     public Map<String, Integer> load() {
         Map<String, Integer> load = new HashMap<>();
 
-        for (String g : gen.keySet()) {
-            load.put(g, 0);
+        for (String gName : gen.keySet()) {
+            load.put(gName, 0);
         }
 
-        for (Map.Entry<String, String> link = link.entrySet()) {
-            if (h != null) {
-                load.merge(link.getValue(), h.getType().getKw(), Integer::sum);
+        for (Map.Entry<String, String> entry : link.entrySet()) {
+            String houseName = entry.getKey();
+            String generatorName = entry.getValue();
+
+            House house = houses.get(houseName);
+            Generator generator = gen.get(generatorName);
+
+            if (house != null && generator != null) {
+                int consommation = house.getType().getKw();
+                load.merge(generatorName, consommation, Integer::sum);
             }
         }
+
         return load;
-
     }
-
 
 }
