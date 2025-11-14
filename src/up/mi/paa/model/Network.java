@@ -76,54 +76,47 @@ public class Network {
         return load;
     }
 
-    public double calculerDisp() {
-        Map<String, Integer> load = load();
-        int nbGen = gen.size();
-        if (nbGen == 0) {
-            return 0.0;
+    public double cout() {
+        double lambda = 10.0;
+        Map<String, Integer> loads = load();
+
+        Map<String, Double> u = new HashMap<>();
+        for (String gName : gen.keySet()) {
+            int charge = loads.getOrDefault(gName, 0);
+            int capacite = gen.get(gName).getKw();
+            double taux = (double) charge / capacite;
+            u.put(gName, taux);
         }
 
-        double sommeU = 0.0;
-        for (Map.Entry<String, Integer> entry : load.entrySet()) {
-            String nomG = entry.getKey();
-            int Lg = entry.getValue();
-            int Cg = gen.get(nomG).getKw();
-            double ug = (double) Lg / (double) Cg;
-            sommeU += ug;
+        double moyenne = 0.0;
+        for (double val : u.values()) {
+            moyenne += val;
         }
-        double u = sommeU / nbGen;
+        moyenne /= gen.size();
 
         double disp = 0.0;
-        for (Map.Entry<String, Integer> entry : load.entrySet()) {
-            String nomG = entry.getKey();
-            int Lg = entry.getValue();
-            int Cg = gen.get(nomG).getKw();
-            double ug = (double) Lg / (double) Cg;
-            disp += Math.abs(ug - u);
+        for (double taux : u.values()) {
+            disp += Math.abs(taux - moyenne);
         }
-        return disp;
-    }
 
-    public double calculerSurcharge() {
-        Map<String, Integer> load = load();
         double surcharge = 0.0;
-
-        for (Map.Entry<String, Integer> entry : load.entrySet()) {
-            String nomG = entry.getKey();
-            int Lg = entry.getValue();
-            int Cg = gen.get(nomG).getKw();
-            double terme = (double) (Lg - Cg) / (double) Cg;
-            if (terme > 0) {
-                surcharge += terme;
+        for (String gName : gen.keySet()) {
+            int charge = loads.getOrDefault(gName, 0);
+            int capacite = gen.get(gName).getKw();
+            double depassement = (double) (charge - capacite) / capacite;
+            if (depassement > 0) {
+                surcharge += depassement;
             }
         }
-        return surcharge;
-    }
 
-    public double cout(int lambda) {
-        double disp = calculerDisp();
-        double surcharge = calculerSurcharge();
-        return disp + lambda * surcharge;
+        double coutTotal = disp + lambda * surcharge;
+
+        System.out.println("=== CALCUL DU COÛT ===");
+        System.out.printf("Disp(S) = %.4f%n", disp);
+        System.out.printf("Surcharge(S) = %.4f%n", surcharge);
+        System.out.printf("Cout(S) = %.4f%n", coutTotal);
+
+        return coutTotal;
     }
 
 }
