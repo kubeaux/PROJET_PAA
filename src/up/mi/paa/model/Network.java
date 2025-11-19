@@ -46,7 +46,11 @@ public class Network {
     }
 
     public void connecter(String h, String g) {
-        link.put(h, g);
+        if (houses.containsKey(h)) {
+            link.put(h, g);
+        } else {
+            link.put(g, h);
+        }
     }
 
     public void deconnecter(String h) {
