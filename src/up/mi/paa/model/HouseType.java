@@ -37,6 +37,10 @@ public enum HouseType {
     /**
      * Convertit une chaîne de caractères en HouseType.
      * Accepte les formats: BASSE, Basse, basse, etc.
+     * 
+     * @param str la chaîne à convertir
+     * @return le HouseType correspondant
+     * @throws IllegalArgumentException si la chaîne ne correspond à aucun type
      */
     public static HouseType fromString(String str) {
         if (str == null || str.trim().isEmpty()) {
