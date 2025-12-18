@@ -14,7 +14,7 @@ public interface SolverAlgorithm {
      * @param nombre max d'itérations
      * @return le coût final du réseau après optimisation
      */
-    double resoudre(Network network, int iterations);
+    double resoudre(Network network, int iter);
 
     /**
      * Retourne le nom de l'algo
