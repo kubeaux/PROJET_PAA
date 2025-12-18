@@ -1,178 +1,149 @@
 package up.mi.paa.app;
 
-import up.mi.paa.model.*;
-import java.util.*;
+import up.mi.paa.cli.Menu;
+import up.mi.paa.exception.NetworkParseException;
+import up.mi.paa.io.NetworkFileHandler;
+import up.mi.paa.model.Network;
 
+import java.io.IOException;
+
+/**
+ * Classe principale du programme de gestion de réseau électrique
+ * 
+ * Usage :
+ *  java up.mi.paa.app.Main                 // Mode manuel
+ *  java up.mi.paa.app.Main fichier.txt 10 // Mode fichier avec lambda=10
+ */
 public class Main {
 
+    /**
+     * Point d'entrée du programme
+     * 
+     * @param Arguments de la ligne de commande :
+     *             args[0] : (optionnel) chemin vers le fichier de réseau
+     *             args[1] : (optionnel, defaut=10) valeur de lambda
+     */
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        afficheBanniere();
+
+        try {
+            if (args.length == 0) {
+                // Mode manuel
+                lancerModeManuel();
+            } else {
+                // Mode fichier
+                lancerModeFichier(args);
+            }
+        } catch (Exception e) {
+            System.err.println("ERREUR FATALE: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Lancer le programme en mode manuel (construction interactive)
+     */
+    private static void lancerModeManuel() {
+        System.out.println(" MODE MANUEL - Construction interactive du réseau");
+        System.out.println("=".repeat(60));
+        
         Network network = new Network();
-
-        boolean fini = false;
-
-        while (!fini) {
-            System.out.println("\n=== MENU PRINCIPAL ===");
-            System.out.println("1) Ajouter un générateur");
-            System.out.println("2) Ajouter une maison");
-            System.out.println("3) Ajouter une connexion entre une maison et un générateur existants");
-            System.out.println("4) Supprimer une connexion existante entre une maison et un générateur");
-            System.out.println("5) Fin (passer au menu réseau)");
-            System.out.print("Choix : ");
-            String choix = sc.nextLine().trim();
-
-            switch (choix) {
-                case "1":
-                    System.out.print("Nom du générateur et capacité (ex: G1 60) : ");
-                    String[] genInfo = sc.nextLine().trim().split(" ");
-                    if (genInfo.length == 2) {
-                        String nomG = genInfo[0];
-                        int kw = Integer.parseInt(genInfo[1]);
-                        network.ajouteGenerator(nomG, kw);
-                        System.out.println("Générateur ajouté : " + nomG + " (" + kw + " kW)");
-                    } else {
-                        System.out.println("Format incorrect !");
-                    }
-                    break;
-
-                case "2":
-                    System.out.print("Nom et type (ex: M1 NORMAL) : ");
-                    String[] houseInfo = sc.nextLine().trim().split(" ");
-                    if (houseInfo.length == 2) {
-                        try {
-                            String nomM = houseInfo[0];
-                            HouseType type = HouseType.valueOf(houseInfo[1].substring(0, 1).toUpperCase() + houseInfo[1].substring(1).toLowerCase());
-                            network.ajouteHouse(nomM, type);
-                            System.out.println("Maison ajoutée : " + nomM + " (" + type + ")");
-                        } catch (IllegalArgumentException e) {
-                            System.out.println("Type de maison invalide. Utilisez BASSE, NORMAL ou FORTE.");
-                        }
-                    } else {
-                        System.out.println("Format incorrect !");
-                    }
-                    break;
-
-                case "3":
-                    System.out.print("Connexion (ex: M1 G1 ou G1 M1) : ");
-                    String[] connect = sc.nextLine().trim().split(" ");
-                    if (connect.length == 2) {
-                        String a = connect[0], b = connect[1];
-                        if (network.getHouses().containsKey(a) && network.getGenerators().containsKey(b)) {
-                            network.connecter(a, b);
-                            System.out.println("Connexion ajoutée : " + a + " → " + b);
-                        } else if (network.getGenerators().containsKey(a) && network.getHouses().containsKey(b)) {
-                            network.connecter(b, a);
-                            System.out.println("Connexion ajoutée : " + b + " → " + a);
-                        } else {
-                            System.out.println("Générateur ou maison introuvable !");
-                        }
-                    } else {
-                        System.out.println("Format incorrect !");
-                    }
-                    break;
-
-                case "4":
-                    System.out.print("Connexion à supprimer (ex: M1 G1 ou G1 M1) : ");
-                    String[] disconnect = sc.nextLine().trim().split(" ");
-                    if (disconnect.length == 2) {
-                        String a = disconnect[0], b = disconnect[1];
-                        if (network.getLink().containsKey(a) && network.getLink().get(a).equals(b)) {
-                            network.deconnecter(a);
-                            System.out.println("Connexion supprimée : " + a + " - " + b);
-                        } else if (network.getLink().containsKey(b) && network.getLink().get(b).equals(a)) {
-                            network.deconnecter(b);
-                            System.out.println("Connexion supprimée : " + b + " - " + a);
-                        } else {
-                            System.out.println("Connexion inexistante !");
-                        }
-                    } else {
-                        System.out.println("Format incorrect !");
-                    }
-                    break;
-
-                case "5":
-                    boolean ok = true;
-                    for (String m : network.getHouses().keySet()) {
-                        if (!network.getLink().containsKey(m)) {
-                            System.out.println("La maison " + m + " n’est pas connectée !");
-                            ok = false;
-                        }
-                    }
-                    if (ok) {
-                        System.out.println("Réseau conforme !");
-                        menuReseau(sc, network);
-                        fini = true;
-                    } else {
-                        System.out.println("Corrigez les problèmes avant de continuer.");
-                    }
-                    break;
-
-                default:
-                    System.out.println("Choix invalide !");
-            }
+        Menu menu = new Menu(network);
+        
+        try {
+            menu.menuConstruction();
+        } finally {
+            menu.close();
         }
     }
 
-    private static void menuReseau(Scanner sc, Network network) {
-        boolean fini = false;
-        while (!fini) {
-            System.out.println("\n=== MENU RÉSEAU ===");
-            System.out.println("1) Calculer le coût du réseau électrique actuel");
-            System.out.println("2) Modifier une connexion");
-            System.out.println("3) Afficher le réseau");
-            System.out.println("4) Fin");
-            System.out.print("Choix : ");
-            String choix = sc.nextLine().trim();
-
-            switch (choix) {
-                case "1":
-                    double cout = network.cout();
-                    System.out.printf("Coût total du réseau : %.4f%n", cout);
-                    break;
-
-                case "2":
-                    System.out.print("Connexion à modifier (ex: M1 G1) : ");
-                    String[] modif = sc.nextLine().trim().split(" ");
-                    if (modif.length == 2) {
-                        String m = modif[0], g = modif[1];
-                        System.out.print("Nouvelle connexion (ex: M1 G2) : ");
-                        String[] nouv = sc.nextLine().trim().split(" ");
-                        if (nouv.length == 2) {
-                            network.deconnecter(m);
-                            network.connecter(nouv[0], nouv[1]);
-                            System.out.println("Connexion modifiée !");
-                        }
-                    }
-                    break;
-
-                case "3":
-                    afficherReseau(network);
-                    break;
-
-                case "4":
-                    System.out.println("Fin du programme.");
-                    fini = true;
-                    break;
-
-                default:
-                    System.out.println("Choix invalide !");
+    /**
+     * Lancer le programme en mode fichier (chargement et optimisation)
+     * 
+     * @param arguments: [fichier, lambda (optionnel)]
+     */
+    private static void lancerModeFichier(String[] args) {
+        System.out.println(" MODE FICHIER - Chargement et optimisation");
+        System.out.println("=".repeat(60));
+        
+        // Parser les arguments
+        String nomFichier = args[0];
+        double lambda = 10.0; // Valeur par défaut
+        
+        if (args.length >= 2) {
+            try {
+                lambda = Double.parseDouble(args[1]);
+                if (lambda <= 0) {
+                    System.err.println("  Lambda doit être > 0, utilisation de la valeur par défaut (10)");
+                    lambda = 10.0;
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("  Lambda invalide, utilisation de la valeur par défaut (10)");
             }
+        }
+        
+        System.out.println("Fichier: " + nomFichier);
+        System.out.println("Lambda:  " + lambda);
+        System.out.println();
+        
+        // Charger le réseau
+        Network network;
+        try {
+            System.out.println(" Chargement du fichier...");
+            network = NetworkFileHandler.readFiles(nomFichier, lambda);
+            System.out.println(" Fichier chargé avec succès!");
+            
+            // Afficher les statistiques
+            System.out.println("\n Statistiques du réseau:");
+            System.out.println("  - Maisons:      " + network.getHouses().size());
+            System.out.println("  - Générateurs:  " + network.getGenerators().size());
+            System.out.println("  - Connexions:   " + network.getLink().size());
+            System.out.println("  - Consommation: " + network.getConsoTotale() + " kW");
+            System.out.println("  - Capacité:     " + network.getCapaciteTotale() + " kW");
+            System.out.printf("  - Coût initial: %.4f%n", network.calculerCout());
+            
+        } catch (NetworkParseException e) {
+            System.err.println("\n ERREUR DE PARSING:");
+            System.err.println(e.getMessage());
+            System.exit(1);
+            return;
+        } catch (IOException e) {
+            System.err.println("\n ERREUR DE LECTURE:");
+            System.err.println(e.getMessage());
+            System.exit(1);
+            return;
+    }
+
+    // Lancer le menu
+    Menu menu = new Menu(network);
+        try {
+            menu.menuFichier();
+        } finally {
+            menu.close();
         }
     }
 
-    private static void afficherReseau(Network network) {
-        System.out.println("\n=== RÉSEAU ACTUEL ===");
-        System.out.println("Maisons :");
-        for (House h : network.getHouses().values()) {
-            System.out.println(" - " + h.getNom() + " (" + h.getType() + ")");
-        }
-        System.out.println("Générateurs :");
-        for (Generator g : network.getGenerators().values()) {
-            System.out.println(" - " + g.getNom() + " (" + g.getKw() + " kW)");
-        }
-        System.out.println("Connexions :");
-        for (Map.Entry<String, String> c : network.getLink().entrySet()) {
-            System.out.println(" - " + c.getKey() + " → " + c.getValue());
-        }
+    /**
+     * Affiche la bannière du programme
+     */
+    private static void afficheBanniere() {
+        System.out.println();
+        System.out.println("╔" + "═".repeat(58) + "╗");
+        System.out.println("║" + centrer("GESTION DE RÉSEAU ÉLECTRIQUE", 58) + "║");
+        System.out.println("║" + centrer("Projet PAA ", 58) + "║");
+        System.out.println("║" + centrer("Université Paris-Cité", 58) + "║");
+        System.out.println("╚" + "═".repeat(58) + "╝");
+        System.out.println();
+    }
+
+    /**
+     * Centre un texte dans une largeur donnée
+     */
+    private static String centrer(String texte, int largeur) {
+        int espacesTotal = largeur - texte.length();
+        int espacesGauche = espacesTotal / 2;
+        int espacesDroite = espacesTotal - espacesGauche;
+        return " ".repeat(espacesGauche) + texte + " ".repeat(espacesDroite);
     }
 }
