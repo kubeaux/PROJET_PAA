@@ -132,7 +132,13 @@ public class GreedySolver implements SolverAlgorithm {
 
         String house = houses.get(random.nextInt(houses.size()));
         String oldGen = network.getGeneratorConnect(house);
-        String newGen = gens.get(random.nextInt(random.nextInt(gens.size())));
+        String newGen = gens.get(random.nextInt(gens.size()));
+
+        if (newGen.equals(oldGen) && gens.size() > 1) {
+            while (newGen.equals(oldGen)) {
+                newGen = gens.get(random.nextInt(gens.size()));
+            }
+        }
 
         double coutActuel = network.calculerCout();
         network.connecter(house, newGen);
