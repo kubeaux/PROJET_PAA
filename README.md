@@ -152,12 +152,26 @@ javac -d bin -sourcepath src src/up/mi/paa/app/Main.java
 
 ## Exécution
 
+### 1. Mode Standard
+
 ```bash
 # Mode manuel
 java -cp bin up.mi.paa.app.Main
 
 # Mode fichier
 java -cp bin up.mi.paa.app.Main exemple_reseau.txt 10
+```
+
+### 2. Mode Interface Graphique
+
+Nécessite le SDK JavaFX dans le dossier lib/javafx-sdk
+
+```bash
+# Mac / Linux
+java --module-path lib/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp bin up.mi.paa.app.AppFX
+
+# Windows
+java --module-path lib/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp bin up.mi.paa.app.AppFX
 ```
 
 ## Exemples de résultats
@@ -174,6 +188,24 @@ L'algorithme glouton converge généralement en moins de 200 itérations.
 Fichiers de test fournis:
 - `exemple_reseau.txt` : réseau de base du sujet
 - Créez vos propres fichiers pour tester différents scénarios
+
+## Tests Unitaires
+
+Une suite complète de tests unitaires (JUnit 5) a été implémentée pour garantir la robustesse de l'application.
+Les fichiers de tests se trouvent dans `test/up/mi/paa/test/`.
+
+### Couverture des tests
+* **Modèle (`NetworkTest`)** : Vérifie la cohérence du réseau, l'unicité des connexions et la précision des calculs de coûts (Disp et Surcharge).
+* **Parsing (`FileHandlerTest`)** : Teste la robustesse du chargement de fichier (gestion des erreurs de syntaxe, ordre incorrect, fichiers inexistants).
+* **Algorithme (`AlgoTest`)** : Vérifie que l'optimisation ne dégrade jamais la solution (non-régression) et respecte les contraintes du réseau.
+
+### Lancer les tests
+Les tests peuvent être exécutés via la console JUnit fournie dans le dossier `lib/`.
+
+**Commande d'exécution :**
+```bash
+java -jar lib/junit-platform-console-standalone-1.9.0.jar -cp bin --scan-classpath
+```
 
 ## Problèmes connus
 
