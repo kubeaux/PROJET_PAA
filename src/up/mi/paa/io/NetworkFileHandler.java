@@ -19,15 +19,15 @@ public class NetworkFileHandler {
    
     /** Pattern pour parser une ligne de générateur */
     private static Pattern GENERATOR_PATTERN = 
-        Pattern.compile("^generateur\\(([a-zA-Z0-9]+),\\s*(\\d+)\\)\\.$");
+        Pattern.compile("^generateur\\(([a-zA-Z0-9]+),\\s*(\\d+)\\)\\.?$");
     
     /** Pattern pour parser une ligne de maison */
      private static Pattern HOUSE_PATTERN =
-        Pattern.compile("^maison\\(([a-zA-Z0-9]+),\\s*(BASSE|NORMAL|FORTE)\\)\\.$");
+        Pattern.compile("^maison\\(([a-zA-Z0-9]+),\\s*(BASSE|NORMAL|FORTE)\\)\\.?$");
     
     /** Pattern pour parser une ligne de connexion */
     private static Pattern CONNECT_PATTERN =
-        Pattern.compile("^connexion\\(([a-zA-Z0-9]+),\\s*([a-zA-Z0-9]+)\\)\\.$");
+        Pattern.compile("^connexion\\(([a-zA-Z0-9]+),\\s*([a-zA-Z0-9]+)\\)\\.?$");
 
     /**
      * Lit un fichier et construit un réseau électrique.
