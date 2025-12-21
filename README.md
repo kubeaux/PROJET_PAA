@@ -96,7 +96,8 @@ connexion(gen2,maison2).
 src/
 └── up/mi/paa/
     ├── app/
-    │   └── Main.java              # Point d'entrée
+    │   ├── Main.java              # Point d'entrée
+    │   └── AppFX.java             # Point d'entrée
     ├── cli/
     │   └── Menu.java              # Interface utilisateur
     ├── model/
@@ -110,6 +111,8 @@ src/
     │   └── GreedySolver.java      # Algorithme glouton (MEILLEUR)
     ├── io/
     │   └── NetworkFileHandler.java # Lecture/écriture fichiers
+    ├── gui/
+    │   └── NetworkFXApp.java              
     └── exception/
         └── NetworkParseException.java # Exceptions parsing
 ```
